@@ -22,7 +22,7 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware('apiauth')->group(function () {
     // Auth
     Route::get('/authenticate',     [AuthController::class, 'authenticate']);
     Route::post('/logout', [AuthController::class, 'logout']);
