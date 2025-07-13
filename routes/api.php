@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\MovieController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,6 +15,21 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
+
+// Auth
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/login', [AuthController::class, 'login']);
+
+
+Route::middleware('auth:sanctum')->group(function () {
+    // Auth
+    Route::post('/logout', [AuthController::class, 'logout']);
+
+    // Movie
+    Route::get('/watchlists', [MovieController::class, 'getWatchlists']);
+    Route::post('/watchlists', [MovieController::class, 'createWatchlist']);
+    Route::get('/watchlists/{id}', [MovieController::class, 'getDetailWatchlist']);
+    Route::put('/watchlists/{id}', [MovieController::class, 'editWatchlistById']);
+    Route::delete('/watchlists/{id}', [MovieController::class, 'deleteWatchlistById']);
 });
+
