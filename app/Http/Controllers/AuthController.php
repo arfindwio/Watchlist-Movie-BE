@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
@@ -22,7 +25,9 @@ class AuthController extends Controller
             'photo' => $data['photo'] ?? null
         ]);
 
-        return response()->json(['user' => $user, 'token' => $user->createToken('api-token')->plainTextToken]);
+        $token = $user->createToken('api-token')->plainTextToken;
+
+        return UserResource::responseWithUserAndToken($user, $token, 'User registered successfully', true, 201);
     }
 
     public function login(Request $request)
@@ -30,20 +35,24 @@ class AuthController extends Controller
         $user = User::where('email', $request->email)->first();
 
         if (! $user || ! Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages(['email' => ['The credentials are incorrect.']]);
+            return UserResource::responseError('The credentials are incorrect.', false, 401);
         }
 
-        return response()->json(['user' => $user, 'token' => $user->createToken('api-token')->plainTextToken]);
+        $token = $user->createToken('api-token')->plainTextToken;
+
+        return UserResource::responseWithUserAndToken($user, $token, 'Login successful');
     }
 
-    public function user(Request $request)
+    public function authenticate(Request $request)
     {
-        return $request->user();
+        return UserResource::responseWithUser($request->user(), 'User retrieved');
     }
 
     public function logout(Request $request)
     {
         $request->user()->tokens()->delete();
-        return response()->json(['message' => 'Logged out']);
+
+        return UserResource::responseLogout();
     }
+
 }
