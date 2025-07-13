@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -15,21 +16,19 @@ class AuthController extends Controller
             'name' => 'required|string',
             'email' => 'required|email|unique:users',
             'password' => 'required|string|confirmed',
-            'photo' => 'nullable|url'
         ]);
 
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
-            'photo' => $data['photo'] ?? null
         ]);
 
         $token = $user->createToken('api-token')->plainTextToken;
 
         return UserResource::responseWithUserAndToken($user, $token, 'User registered successfully', true, 201);
     }
-
+    
     public function login(Request $request)
     {
         $user = User::where('email', $request->email)->first();
