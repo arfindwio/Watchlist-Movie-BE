@@ -7,6 +7,7 @@ use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\Storage;
 
 class AuthController extends Controller
 {
@@ -45,6 +46,54 @@ class AuthController extends Controller
     public function authenticate(Request $request)
     {
         return UserResource::responseWithUser($request->user(), 'User retrieved');
+    }
+
+    public function editProfile(Request $request)
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'name' => 'sometimes|required|string|max:255',
+            'photo' => 'sometimes|file|image|max:2048',
+        ]);
+
+        if (isset($validated['name'])) {
+            $user->name = $validated['name'];
+        }
+
+        if ($request->hasFile('photo')) {
+            // Hapus foto lama
+            if ($user->photo && Storage::disk('public')->exists('photos/' . $user->photo)) {
+                Storage::disk('public')->delete('photos/' . $user->photo);
+            }
+
+            // Simpan foto baru
+            $path = $request->file('photo')->store('photos', 'public');
+            $user->photo = basename($path);
+        }
+
+        $user->save();
+
+        return UserResource::responseWithUser($user, 'Profile updated successfully');
+    }
+
+    public function deleteProfilePhoto(Request $request)
+    {
+        $user = $request->user();
+
+        // Path foto lama
+        $photoPath = 'public/photos/' . $user->photo;
+
+        // Hapus file jika ada dan user punya photo
+        if ($user->photo && \Storage::exists($photoPath)) {
+            \Storage::delete($photoPath);
+        }
+
+        // Set kolom photo ke null
+        $user->photo = null;
+        $user->save();
+
+        return UserResource::responseWithUser($user, 'Profile photo deleted (if existed)');
     }
 
     public function logout(Request $request)
