@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('title');
-            $table->string('poster_url');
+            $table->string('poster');
             $table->year('release_year');
             $table->text('genre');
             $table->boolean('watched')->default(false);

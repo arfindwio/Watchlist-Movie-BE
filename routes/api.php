@@ -33,7 +33,7 @@ Route::middleware('apiauth')->group(function () {
     Route::get('/watchlists', [MovieController::class, 'getWatchlists']);
     Route::post('/watchlists', [MovieController::class, 'createWatchlist']);
     Route::get('/watchlists/{id}', [MovieController::class, 'getDetailWatchlist']);
-    Route::put('/watchlists/{id}', [MovieController::class, 'editWatchlistById']);
+    Route::post('/watchlists/{id}', [MovieController::class, 'editWatchlistById']);
     Route::delete('/watchlists/{id}', [MovieController::class, 'deleteWatchlistById']);
 });
 

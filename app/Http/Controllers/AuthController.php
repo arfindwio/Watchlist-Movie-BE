@@ -6,8 +6,6 @@ use App\Models\User;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Facades\Storage;
 
 class AuthController extends Controller
 {
@@ -63,8 +61,8 @@ class AuthController extends Controller
 
         if ($request->hasFile('photo')) {
             // Hapus foto lama
-            if ($user->photo && Storage::disk('public')->exists('photos/' . $user->photo)) {
-                Storage::disk('public')->delete('photos/' . $user->photo);
+            if ($user->photo && \Storage::disk('public')->exists('photos/' . $user->photo)) {
+                \Storage::disk('public')->delete('photos/' . $user->photo);
             }
 
             // Simpan foto baru
@@ -81,15 +79,12 @@ class AuthController extends Controller
     {
         $user = $request->user();
 
-        // Path foto lama
-        $photoPath = 'public/photos/' . $user->photo;
+        $photoPath = 'photos/' . $user->photo;
 
-        // Hapus file jika ada dan user punya photo
-        if ($user->photo && \Storage::exists($photoPath)) {
-            \Storage::delete($photoPath);
+        if ($user->photo && \Storage::disk('public')->exists($photoPath)) {
+            \Storage::disk('public')->delete($photoPath);
         }
 
-        // Set kolom photo ke null
         $user->photo = null;
         $user->save();
 
@@ -102,5 +97,4 @@ class AuthController extends Controller
 
         return UserResource::responseLogout();
     }
-
 }

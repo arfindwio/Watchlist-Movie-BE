@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Resources\MovieResource;
 use App\Models\Movie;
+use App\Http\Resources\MovieResource;
 use Illuminate\Http\Request;
 
 class MovieController extends Controller
@@ -31,19 +31,34 @@ class MovieController extends Controller
     // Create new watchlist movie
     public function createWatchlist(Request $request)
     {
-        $data = $request->validate([
-            'title' => 'required|string',
-            'poster_url' => 'required|url',
-            'release_year' => 'required|digits:4|integer',
-            'genre' => 'required|string',
-            'watched' => 'boolean',
-            'score' => 'required|integer|between:1,100',
-            'review' => 'required|string',
-        ]);
+        try {
+            $data = $request->validate([
+                'title' => 'required|string',
+                'poster' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+                'release_year' => 'required|digits:4|integer',
+                'genre' => 'required|string',
+                'watched' => 'boolean',
+                'score' => 'required|integer|between:1,100',
+                'review' => 'required|string',
+            ]);
 
-        $movie = $request->user()->movies()->create($data);
+            // Simpan file poster
+            $file = $request->file('poster');
+            $filename = $file->hashName();
+            $path = $file->storeAs('photos', $filename, 'public');
 
-        return MovieResource::responseWith(true, 'Movie added to watchlist', $movie, 201);
+            $data['poster'] = $path;
+
+            $movie = $request->user()->movies()->create($data);
+
+            return MovieResource::responseWith(true, 'Movie added to watchlist', $movie, 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     // Edit watchlist movie by id
@@ -57,13 +72,27 @@ class MovieController extends Controller
 
         $data = $request->validate([
             'title' => 'sometimes|string',
-            'poster_url' => 'sometimes|url',
+            'poster' => 'sometimes|image|mimes:jpg,jpeg,png|max:2048',
             'release_year' => 'sometimes|digits:4|integer',
             'genre' => 'sometimes|string',
             'watched' => 'sometimes|boolean',
             'score' => 'sometimes|integer|between:1,100',
             'review' => 'sometimes|string',
         ]);
+
+        if ($request->hasFile('poster')) {
+            // Hapus file lama jika ada
+            if ($movie->poster && \Storage::disk('public')->exists($movie->poster)) {
+                \Storage::disk('public')->delete($movie->poster);
+            }
+
+            // Simpan file baru dengan nama hash di folder 'photos'
+            $file = $request->file('poster');
+            $filename = $file->hashName(); // nama file unik
+            $path = $file->storeAs('photos', $filename, 'public'); // simpan di storage/app/public/photos
+
+            $data['poster'] = $path; // simpan path relatif ke database
+        }
 
         $movie->update($data);
 
