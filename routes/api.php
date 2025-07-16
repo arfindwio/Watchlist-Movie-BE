@@ -31,10 +31,12 @@ Route::middleware('apiauth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
     // Movie
-    Route::get('/watchlists', [MovieController::class, 'getWatchlists']);
-    Route::post('/watchlists', [MovieController::class, 'createWatchlist']);
-    Route::get('/watchlists/{id}', [MovieController::class, 'getDetailWatchlist']);
-    Route::post('/watchlists/{id}', [MovieController::class, 'editWatchlistById']);
-    Route::delete('/watchlists/{id}', [MovieController::class, 'deleteWatchlistById']);
+    Route::get('/movies', [MovieController::class, 'getMovies']);
+    Route::post('/movies/watchlist', [MovieController::class, 'createWatchlist']);
+    Route::get('/movies/unwatched', [MovieController::class, 'getAllUnwatched']);
+    Route::get('/movies/watched', [MovieController::class, 'getAllWatched']);
+    Route::get('/movies/{id}', [MovieController::class, 'getDetailMovie']);
+    Route::post('/movies/{id}', [MovieController::class, 'editMovieById']);
+    Route::delete('/movies/{id}', [MovieController::class, 'deleteMovieById']);
 });
 
