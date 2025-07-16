@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
@@ -52,7 +53,7 @@ class AuthController extends Controller
 
         $validated = $request->validate([
             'name' => 'sometimes|required|string|max:255',
-            'photo' => 'sometimes|file|image|max:2048',
+            'photo' => 'sometimes|mimes:jpg,jpeg,png|image|max:2048',
         ]);
 
         if (isset($validated['name'])) {
@@ -90,6 +91,26 @@ class AuthController extends Controller
 
         return UserResource::responseWithUser($user, 'Profile photo deleted (if existed)');
     }
+
+    public function changePassword(Request $request)
+{
+    $user = $request->user();
+
+    $request->validate([
+        'current_password' => 'required',
+        'new_password' => 'required|string|min:8|confirmed',
+    ]);
+
+    if (!\Hash::check($request->current_password, $user->password)) {
+        return UserResource::responseError('Password lama tidak cocok', false, 403);
+    }
+
+    $user->password = \Hash::make($request->new_password);
+    $user->save();
+
+    return UserResource::responseWithUser($user, 'Password berhasil diubah');
+}
+
 
     public function logout(Request $request)
     {

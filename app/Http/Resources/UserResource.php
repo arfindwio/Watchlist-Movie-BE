@@ -48,6 +48,17 @@ class UserResource extends JsonResource
         ], $code);
     }
 
+    // Response sukses ganti password
+    public static function responsePasswordChanged($message = 'Password berhasil diganti', $status = true, $code = 200)
+    {
+        return response()->json([
+            'status' => $status,
+            'message' => $message,
+            'data' => null,
+        ], $code);
+    }
+
+
     // Response error standar
     public static function responseError($message = 'Error', $status = false, $code = 400)
     {

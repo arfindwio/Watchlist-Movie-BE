@@ -27,6 +27,7 @@ Route::middleware('apiauth')->group(function () {
     Route::get('/authenticate',     [AuthController::class, 'authenticate']);
     Route::post('/profile', [AuthController::class, 'editProfile']);
     Route::delete('/profile/photo', [AuthController::class, 'deleteProfilePhoto']);
+    Route::put('/change-password', [AuthController::class, 'changePassword']);
     Route::post('/logout', [AuthController::class, 'logout']);
 
     // Movie
