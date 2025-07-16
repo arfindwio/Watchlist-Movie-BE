@@ -9,15 +9,28 @@ use Illuminate\Http\Request;
 class MovieController extends Controller
 {
     // Get list watchlist
-    public function getWatchlists(Request $request)
+    public function getMovies(Request $request)
     {
-        $movies = $request->user()->movies()->get();
+        $user = $request->user();
 
-        return MovieResource::collectionResponseWith(true, 'List of watchlists', $movies);
+        $unwatched = $user->movies()
+            ->where(function ($query) {
+                $query->where('watched', false)->orWhereNull('watched');
+            })
+            ->limit(5)
+            ->get();
+
+        $watched = $user->movies()
+            ->where('watched', true)
+            ->limit(5)
+            ->get();
+
+        return MovieResource::responseWithWatchedAndUnwatched(true, 'Movies list', $watched, $unwatched);
     }
 
+
     // Get detail watchlist
-    public function getDetailWatchlist($id, Request $request)
+    public function getDetailMovie($id, Request $request)
     {
         $movie = Movie::where('id', $id)->where('user_id', $request->user()->id)->first();
 
@@ -31,38 +44,56 @@ class MovieController extends Controller
     // Create new watchlist movie
     public function createWatchlist(Request $request)
     {
-        try {
-            $data = $request->validate([
-                'title' => 'required|string',
-                'poster' => 'required|image|mimes:jpg,jpeg,png|max:2048',
-                'release_year' => 'required|digits:4|integer',
-                'genre' => 'required|string',
-                'watched' => 'boolean',
-                'score' => 'required|integer|between:1,100',
-                'review' => 'required|string',
-            ]);
+        $data = $request->validate([
+            'title' => 'required|string',
+            'poster' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+            'release_year' => 'required|digits:4|integer',
+            'genre' => 'required|string',
+            'watched' => 'boolean',
+            'score' => 'required|integer|between:1,100',
+            'review' => 'required|string',
+        ]);
 
-            // Simpan file poster
-            $file = $request->file('poster');
-            $filename = $file->hashName();
-            $path = $file->storeAs('photos', $filename, 'public');
+        // Simpan file poster
+        $file = $request->file('poster');
+        $filename = $file->hashName();
+        $path = $file->storeAs('photos', $filename, 'public');
 
-            $data['poster'] = $path;
+        $data['poster'] = $path;
 
-            $movie = $request->user()->movies()->create($data);
+        $movie = $request->user()->movies()->create($data);
 
-            return MovieResource::responseWith(true, 'Movie added to watchlist', $movie, 201);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Something went wrong',
-                'error' => $e->getMessage()
-            ], 500);
-        }
+        return MovieResource::responseWith(true, 'Movie added to watchlist', $movie, 201);
     }
 
-    // Edit watchlist movie by id
-    public function editWatchlistById($id, Request $request)
+    // Get all unwatched watchlists
+    public function getAllUnwatched(Request $request)
+    {
+        $user = $request->user();
+
+        $unwatched = $user->movies()
+            ->where(function ($query) {
+                $query->where('watched', false)->orWhereNull('watched');
+            })
+            ->get();
+
+        return MovieResource::collectionResponseWith(true, 'All unwatched watchlists', $unwatched);
+    }
+
+    // Get all watched watchlists
+    public function getAllWatched(Request $request)
+    {
+        $user = $request->user();
+
+        $watched = $user->movies()
+            ->where('watched', true)
+            ->get();
+
+        return MovieResource::collectionResponseWith(true, 'All watched watchlists', $watched);
+    }
+
+    // Edit movie by id
+    public function editMovieById($id, Request $request)
     {
         $movie = Movie::where('id', $id)->where('user_id', $request->user()->id)->first();
 
@@ -99,8 +130,8 @@ class MovieController extends Controller
         return MovieResource::responseWith(true, 'Movie updated successfully', $movie);
     }
 
-    // Delete watchlist movie by id
-    public function deleteWatchlistById($id, Request $request)
+    // Delete movie by id
+    public function deleteMovieById($id, Request $request)
     {
         $movie = Movie::where('id', $id)->where('user_id', $request->user()->id)->first();
 

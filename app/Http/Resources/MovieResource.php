@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class MovieResource extends JsonResource
 {
@@ -18,7 +19,7 @@ class MovieResource extends JsonResource
             'id' => $this->id,
             'user_id' => $this->user_id,
             'title' => $this->title,
-            'poster' => $this->poster,
+            'poster' => $this->poster ? asset('storage/' . $this->poster) : null,
             'release_year' => $this->release_year,
             'genre' => $this->genre,
             'watched' => (bool) $this->watched,
@@ -63,5 +64,16 @@ class MovieResource extends JsonResource
         ], $code);
     }
 
-    
+    // Response khusus untuk getMovies yang mengembalikan 2 koleksi sekaligus
+    public static function responseWithWatchedAndUnwatched(bool $status, string $message, $watched = [], $unwatched = [], int $code = 200)
+    {
+        return response()->json([
+            'status' => $status,
+            'message' => $message,
+            'data' => [
+                'watched' => self::collection($watched),
+                'unwatched' => self::collection($unwatched),
+            ],
+        ], $code);
+    }
 }
