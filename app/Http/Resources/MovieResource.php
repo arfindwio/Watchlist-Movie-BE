@@ -24,7 +24,6 @@ class MovieResource extends JsonResource
             'genre' => $this->genre,
             'watched' => (bool) $this->watched,
             'score' => $this->score,
-            'review' => $this->review,
             'created_at' => $this->created_at->toDateTimeString(),
             'updated_at' => $this->updated_at->toDateTimeString(),
         ];

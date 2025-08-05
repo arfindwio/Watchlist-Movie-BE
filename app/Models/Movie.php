@@ -14,7 +14,6 @@ class Movie extends Model
         'genre',
         'watched',
         'score',
-        'review',
     ];
 
     protected $casts = [
