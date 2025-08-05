@@ -51,7 +51,6 @@ class MovieController extends Controller
             'genre' => 'required|string',
             'watched' => 'boolean',
             'score' => 'required|integer|between:1,100',
-            'review' => 'required|string',
         ]);
 
         // Simpan file poster
@@ -108,7 +107,6 @@ class MovieController extends Controller
             'genre' => 'sometimes|string',
             'watched' => 'sometimes|boolean',
             'score' => 'sometimes|integer|between:1,100',
-            'review' => 'sometimes|string',
         ]);
 
         if ($request->hasFile('poster')) {

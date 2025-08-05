@@ -22,7 +22,6 @@ return new class extends Migration
             $table->text('genre');
             $table->boolean('watched')->default(false);
             $table->integer('score');
-            $table->text('review');
             $table->timestamps();
         });
     }
