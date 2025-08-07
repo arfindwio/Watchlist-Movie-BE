@@ -17,12 +17,10 @@ class MovieController extends Controller
             ->where(function ($query) {
                 $query->where('watched', false)->orWhereNull('watched');
             })
-            ->limit(5)
             ->get();
 
         $watched = $user->movies()
             ->where('watched', true)
-            ->limit(5)
             ->get();
 
         return MovieResource::responseWithWatchedAndUnwatched(true, 'Movies list', $watched, $unwatched);
